@@ -11,9 +11,9 @@ RouterBench provides a benchmark of model responses across a diverse set of task
 To get started, please clone the repo and `cd` into that directory.
 
 ```bash
-# Ensure correct Python version (uses .python-version)
+# Install required Python version if not already installed
+# Python version is set for the project directory with .python-version
 pyenv install 3.11.9
-pyenv local 3.11.9
 
 # Create and activate virtual environment
 python -m venv venv
