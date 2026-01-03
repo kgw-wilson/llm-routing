@@ -12,9 +12,6 @@ __pycache__
 # Dependencies
 venv
 
-# Full model weights and info for things like Flan - too large to commit
-model_cache
-
 # Downloaded RouterBench data
 routerbench_data/*.csv
 routerbench_data/*.pkl

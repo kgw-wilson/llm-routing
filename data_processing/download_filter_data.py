@@ -5,6 +5,7 @@ import pandas as pd
 from data_processing.constants import (
     SAMPLE_ID_COL,
     PROMPT_COL,
+    DATASET_NAME_COL,
     MODEL_PERFORMANCE_COLS,
     RB_DATA_PATH,
     FILTERED_CSV_PATH,
@@ -52,6 +53,7 @@ def filter_routerbench_data_and_save_csv() -> None:
     columns_to_keep = [
         SAMPLE_ID_COL,
         PROMPT_COL,
+        DATASET_NAME_COL,
         *MODEL_PERFORMANCE_COLS,
         *response_cols,
     ]

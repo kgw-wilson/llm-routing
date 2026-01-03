@@ -1,0 +1,9 @@
+package,output,generation_time,load_time
+transformers,"
+1) Task type: Guessing game
+2) Difficulty: Medium
+3) Skills required: Analytical thinking, knowledge of Chinese characters, understanding of Chinese idi",953.997181892395,126.52523589134216
+llama.cpp,"
+1) Task type: Guessing a word from Chinese idiom
+2) Difficulty: Medium
+3) Skills required: Analytical thinking, knowledge of Chinese idi",6.012679100036621,2.584141969680786

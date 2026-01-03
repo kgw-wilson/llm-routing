@@ -1,0 +1,3 @@
+# Experiment 7: Relative Neighborhood Embeddings
+
+Given that experiment 6 showed that the dimensinoality of the embedding data was important for making an accurate choice of model, what if there was a way to keep the dimensionality the same but to smooth out the embeddings. So that when doing prediction for the samples in the evaluation set, we pass in not the prompt/response embedding for that sample but the mean of the k-closest embeddings in the training data. That could let us do routing with information about the type of task that a given evaluation sample represents rather than just eh individual sample.

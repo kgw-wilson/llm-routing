@@ -89,4 +89,5 @@ def _run_experiment() -> None:
 if __name__ == "__main__":
     if RESULTS_CSV_PATH.exists():
         print(f"Experiment 2 results already exist at: {RESULTS_CSV_PATH}")
-    _run_experiment()
+    else:
+        _run_experiment()

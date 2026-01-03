@@ -69,7 +69,7 @@ def evaluate_predictions(
     across an evaluation sample's nearest neighbors in the training data is able to
     answer that evaluation prompt correctly.
 
-    RouterBench's code seems to say "correct" at the sample level means any value
+    RouterBench's code seems to say "correct" for a sample level means any value
     over 0.0, so that's what is done here.
     """
 
@@ -79,8 +79,6 @@ def evaluate_predictions(
     # Extra enumerate done to not depend on DataFrame indices
     for i, (_, row) in enumerate(eval_df.iterrows()):
         predicted_model = predictions[i]
-    # for idx, row in eval_df.iterrows():
-    #     predicted_model = predictions[idx]
         was_model_correct = row[predicted_model] > 0.0
         if was_model_correct:
             correct += 1
