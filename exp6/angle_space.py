@@ -62,13 +62,10 @@ def _run_experiment() -> None:
 
         angle_space_col = model_name + ANGLE_SPACE_SUFFIX
 
-        # Convert angle spaces to arrays
+        # Convert angle spaces to arrays (don't normalize because that would
+        # destroy information)
         train_embeddings = np.stack(train_df[angle_space_col])
         eval_embeddings = np.stack(eval_df[angle_space_col])
-
-        # Normalize embeddings for better nearest neighbors performance
-        # train_embeddings = normalize(train_embeddings)
-        # eval_embeddings = normalize(eval_embeddings)
 
         for k in K_VALUES:
 
