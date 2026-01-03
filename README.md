@@ -1,37 +1,10 @@
-# Intelligent Routing System for Language Models
+# Evaluating Embeddings in RouterBench
 
 ## Project Overview
 
-This project creates an advanced router to direct user prompts to the optimal Large Language Model (LLM) based on performance, latency, and cost considerations. The router analyzes each prompt, generates a task description using a language model, and selects the best model through a refined ranking system.
+This project extends [RouterBench](https://arxiv.org/abs/2403.12031) by evaluating different strategies for using embeddings to route a given prompt to the most appropriate model. The goal is to explore whether embeddings—of the prompt, the model's response, or combinations thereof—can help predict which model will perform best on a given task.
 
-## Process
-
-Prompt Analysis: Each user prompt is processed by a language model that distills the task into a concise description.
-Task Embedding: This description is converted to an embedding via a lightweight BERT model (e.g., DistilBERT or ALBERT).
-Clustering: Task embeddings are clustered using methods like DBSCAN or k-means to match prompts with their nearest cluster centers.
-Model Selection: Based on user preferences, the router selects the top model for each cluster by evaluating performance, latency, and cost rankings.
-Dynamic Updating: New task embeddings trigger clustering updates. Models are re-ranked by a judge model compared against a reference model, capturing costs and latencies.
-
-## LLM Ranking Methodology
-
-Prompt Dataset: A diverse prompt dataset is compiled across 25 distinct tasks.
-Model Testing: Using OpenRouter, five models (Claude-2, ChatGPT-3.5-turbo, ChatGPT-4, Meta-LLaMA-34B, and Meta-LLaMA-2-70B) are evaluated for all prompts.
-Rank Scoring: Each model’s performance is evaluated by LLM judges and human raters to establish unbiased rankings. To mitigate position bias, each judge model evaluates two LLM outputs six times per task, disregarding ties.
-
-## Advancements Beyond Existing Methods
-
-This system extends current LLM routing approaches by incorporating dynamic embedding-based clustering with an adaptive model-ranking mechanism. This setup continuously refines model selection as new tasks emerge, optimizing user-specific parameters in real time. This combination of task clustering, embedding adaptation, and regular performance re-evaluation enables the router to support more nuanced, responsive model deployment across a wide range of use cases.
-
-## Results
-
-- Compiled a dataset of 25 realworld LLM applications by hand
-- Generated system for getting human rankings and judge LLM rankings for candidate models on each task
-- Created prompt -> task embedding pipeline that runs in 0.38 (describe task being performed for a prompt) + 0.06 (generate task embedding) = 0.44 seconds total ON A CPU. This pipeline running on a GPU would be both accurate and extremely fast.
-
-
-## Requirements
-- Python 3.11 (recommended via `pyenv`)
-- `pip`
+RouterBench provides a benchmark of model responses across a diverse set of tasks. This work focuses on **embedding-based routing**, i.e., mapping prompts (or derived representations) into a feature space and using similarity metrics to guide model selection.
 
 ## Setup
 
@@ -48,94 +21,85 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+```
 
+## Motivation
 
-## Related concepts
+In multi-model systems, selecting the optimal model for each prompt can improve performance without requiring human intervention. While prior work primarily uses the raw prompt or handcrafted heuristics, we explore:
 
+1. **Prompt embeddings** – capturing semantic content directly from the prompt.
+2. **Response embeddings** – capturing what models actually produce.
+3. **Combinations or transformations** – including differences, weighted differences, and smoothing over neighbors.
+4. **Derived features** – e.g., angular relationships between prompt and response embeddings.
 
-1) Closest Concept: Task/Delta Embeddings
+Our experiments ask: *How much information about the task or optimal model is encoded in these embedding spaces, and how can it be exploited for routing?*
 
-Even if they don’t use the exact subtraction idea, several papers consider how task information arises from changes between input and output:
+## Experiments
 
-🔹 Task2Vec (Achille et al., 2019)
-	•	Represents a task by how a probe network’s parameters shift when learning that task.
-	•	Intuitively similar: Task is defined by how the output distribution differs from what’s expected.
-	•	Not embedding subtraction, but conceptually captures difference/change as a signal.
+Below is a high-level summary of the experiments performed. See the `results` directory for CSV files and figures.
 
-👉 Your idea (response − prompt) is in the same spirit because it focuses on what changes between input and output.
+### Experiment 1 – kNN on Prompt Embeddings
+- **Concept:** Use embeddings of the prompts directly for nearest-neighbor model selection.
+- **Results:** Strong baseline; captures task semantics effectively.
 
-⸻
+### Experiment 2 – kNN on Response Embeddings
+- **Concept:** Use embeddings of the model’s responses instead of prompts.
+- **Results:** Slightly better at some k values, but noisy responses can mislead.
 
-🔹 Contrastive Task Embeddings
+### Experiment 3 – Concatenation of Prompt + Response
+- **Concept:** Combine prompt and response embeddings into a single feature vector.
+- **Results:** Small improvement over individual prompt embeddings (~0.5–1% accuracy gain).
 
-Some meta-learning papers use contrastive learning to encode tasks:
-	•	Encode tasks by differences in how models perform on them.
-	•	Goal: embed tasks such that similar tasks cluster.
+### Experiment 4 – Difference of Prompt and Response Embeddings
+- **Concept:** Compute `response_emb - prompt_emb` to capture “information added by the model.”
+- **Results:** Minor improvement over concatenation, suggesting some signal in the residual but limited.
 
-Not exactly subtraction, but difference becomes meaningful in the embedding space.
+### Experiment 5 – Weighted Difference (α·response + β·prompt)
+- **Concept:** Explore if weighting the prompt and response differences improves performance.
+- **Results:** Negligible improvement over exp4; confirms that simple differences are sufficient in most cases.
 
-⸻
+### Experiment 6 – Angle Features in Prompt/Response Space
+- **Concept:** Use features based on cosine similarity and vector norms to reduce dimensionality.
+- **Results:** ~1–2% drop in accuracy compared to full embeddings, highlighting that high-dimensional embeddings encode important information for routing.
 
-🧠 2) Prompt vs Response Embedding Interaction
+### Experiment 7 – Relative Neighborhood Embeddings (Smoothing)
+- **Concept:** Replace each evaluation sample’s response embedding with the mean of the reponse embeddings for the k-nearest neighbors with the most similar prompts in the training set, smoothing the embedding space.
+- **Results:** Slight gains; the approach captures task-level information beyond individual samples.
 
-Rather than direct subtraction, many papers look at joint representations of input and output:
+### Experiment 9 – Task Description Embeddings
+- **Concept:** Generate a brief natural language description of the task and embed that description instead of the full prompt.
+- **Results:** Performance comparable to prompt embeddings.
 
-🔹 Encoder–Decoder Interaction Embeddings
-	•	Papers on sequence tagging / translation quality estimation sometimes train embeddings of (input, candidate output) pairs.
-	•	Typically they:
-	•	Concatenate input and output
-	•	Pass through a joint encoder
-	•	Train on quality/performance labels
+## Summary of Results
 
-This is closely related to what you want, but:
-	•	They learn a joint representation, not a naive arithmetic difference.
+Results for exp2 - exp7 are from the MistralAI 7b chat model. For more information about individual model performance, see the 	results.csv` file in those directories.
 
-Examples worth reading:
-	•	“Learning joint representations of source and translation”
-	•	“Estimate translation quality without references” (Quality Estimation field)
+- **Best performance** was consistently achieved using full response embeddings.
+- **Angle-based features** provide interpretable insights but reduce accuracy.
+- **Task description embeddings** offer comparable accuracy but require additional generation from an LLM.
 
-⸻
+![Accuracy results](./accuracy_results.png)
 
-🧠 3) Latent Alignment & Delta Features
+Here are the same results using accuracy of routing based on prompt embeddings (experiment 1) as a baseline:
 
-There are works in representation learning that treat difference vectors as meaningful
+![Accuracy results](./relative_accuracy_results.png)
 
-🔹 Word2Vec Analogues
+## Conclusions
 
-In word embeddings:
-	•	Vector offsets correspond to analogies (e.g., king - man + woman ≈ queen)
-	•	This suggests that difference vectors capture meaningful transformations
+1. **High-dimensional embeddings matter:** Our attempt to reduce dimensionality by using simplistic transformations degraded accuracy.
 
-Your task embedding (response − prompt) is analogous at the sentence level:
+2. **Response embeddings add signal** on their own. Our attempts to combine them with prompt embeddings did not result in accuracy gains.
 
-the transformation a model makes to solve the task
+## Future Work
 
-There isn’t a canonical paper that uses this exact operation for task routing, but the analogy provides motivation.
+1.	Learned combinations of prompt and response embeddings: Instead of simple addition or weighted differences, a model (e.g., decision tree, small neural network) could learn how to optimally combine prompt and response embeddings for routing. This may outperform using response embeddings alone.
 
-⸻
+2.	Ensemble-based routing: Rather than directly weighting embeddings, perform routing separately on prompt and response embeddings, identify the top-performing models for each, and combine their predictions to find the model to route to.
 
-🧠 4) Response-Aware Representations
+3.	Improved task description embeddings: Our experiments used MistralAI Instruct v0.3. Stronger models could plausibly generate higher-quality task descriptions, potentially improving routing accuracy.
 
-A few papers look at using generated responses (or model outputs) as signals:
+## References
 
-🔹 “Latent Retrieval for Weak Supervision” (Lewis et al., 2022)
-	•	Uses representations of model outputs (or intermediate features) as retrieval keys.
-	•	Shows generated content often encodes task elements more robustly than input alone.
-
-🔹 Chain-of-Thought / Self-Consistency Papers (Wang et al., 2022+)
-	•	Response paths (and differences from prompt) reveal latent task difficulty.
-	•	Not used for routing, but strongly supports the idea that response embeddings contain additional task signal.
-
-⸻
-
-🧠 5) Meta-Performance Prediction
-
-A more direct line of work tries to predict model performance from some representation of input and/or output:
-	•	Train a small model to predict whether a larger model will succeed.
-	•	Use embeddings of (prompt + candidate output) as input to this predictor.
-
-Examples:
-	•	“Predicting model performance for task selection”
-	•	“Learning to rank models based on task embeddings”
-
-These aren’t mainstream yet, but they are exactly the meta learning version of what you’re exploring.
+1. [RouterBench: Benchmarking Multi-Model Routing](https://arxiv.org/abs/2403.12031)
+2. Mikolov et al., *Efficient Estimation of Word Representations in Vector Space*, 2013.
+3. Reimers & Gurevych, *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*, 2019.

@@ -1,10 +1,17 @@
 # Experiment 4 Difference of Prompt and REsponse embeeddings
 
-task_vec = response_emb - prompt_emb
+In this experiment, we represent each sample using the vector difference between the response embedding and the corresponding prompt embedding:
 
-Interpretation:
-“What information was added by the model?”
+$$
+\text{task\_vector} = \text{response\_embedding} - \text{prompt\_embedding}
+$$
+
+## Intuition
+
+This representation aims to capture what information the model adds beyond the prompt itself. Intuitively, the difference vector isolates the transformation induced by the model when generating a response, potentially encoding task-specific reasoning or completion behavior rather than raw prompt content.
 
 ## Results
 
-Again, similar to experiment 3, the mean accuracy across all models was 0.5% higher than in experiment 1 and 1% higher than in experiment 2. This shows a slight improvement when considering both prompt and response but nothing substantial.
+Performance using the difference vector was comparable to Experiment 3. The mean accuracy across all models was approximately 0.5% higher than Experiment 1 (prompt embeddings) and 1% higher than Experiment 2 (response embeddings).
+
+While this suggests that incorporating both prompt and response information can provide a modest benefit, the improvement is small. Overall, simple vector differencing does not appear to capture substantially more useful routing signal than higher-dimensional representations that do not modify the embedding structure.

@@ -1,6 +1,6 @@
 # Concatenation of Prompt and Response Embeddings
 
-Given that kNN performed reasonably well with both the prompt and responses, start trying other things like combinations of them both. Simpleset is concatenation.
+Given that kNN performed reasonably well with both the prompt and responses in exp1 and exp2, respectively, we decided to start trying other methods of combining prompt and response embeddings to see if their combination would provide useful information for routing. We began with the simplest way of combining embeddings, concatenation.
 
 ## Results
 

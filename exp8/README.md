@@ -47,11 +47,9 @@ Notes:
 
 ## Results
 
-1. I could not get Transformers + bitsandbytes to run on MPS (Apple GPU) due to PyTorch and bitsandbytes CUDA limitations. ([StackOverflow reference](https://stackoverflow.com/questions/76924239/accelerate-and-bitsandbytes-is-needed-to-install-but-i-did))
+1. 4-bit CPU inference with Transformers worked, but was very slow (~953s per prompt).
 
-2. 4-bit CPU inference with Transformers worked, but was very slow (~953s per prompt).
-
-3. LLaMA.cpp 4-bit inference on M1 completed in ~6 seconds, making it far more practical.
+2. LLaMA.cpp 4-bit inference on M1 completed in ~6 seconds, making it far more practical.
 
 So for Apple Silicon, llama.cpp is what future experiments will use.
 
